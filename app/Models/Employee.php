@@ -24,4 +24,9 @@ class Employee extends Model
     {
         return $this->hasMany(ContactNumber::class);
     }
+
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
 }

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Employee;
 use Illuminate\Support\Facades\Validator;
 use App\Models\ContactNumber;
+use App\Models\Address;
 
 class EmployeeController extends Controller
 {
@@ -90,5 +91,37 @@ class EmployeeController extends Controller
         $contactNumber = ContactNumber::create($validatedData);
 
         return response()->json(['status' => 200, 'message' => 'Contact number added successfully', 'data' => $contactNumber], 200);
+    }
+
+    public function addAddress(Request $request, $employeeId)
+    {
+        $employee = Employee::find($employeeId);
+
+        if (!$employee) {
+            return response()->json(['status' => 404, 'message' => 'Employee not found', 'data' => []], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'address_type' => 'required|string|max:255',
+            'address_line_1' => 'required|string|max:255',
+            'address_line_2' => 'nullable|string|max:255',
+            'city' => 'required|string|max:255',
+            'state' => 'required|string|max:255',
+            'zip_code' => 'required|string|max:10',
+        ]);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            // Handle validation errors as needed
+            return response()->json(['status' => 422, 'message' => $validator->errors(), 'data' => []], 422);
+        }
+
+        $validatedData = $validator->validated();
+
+        // Add employee_id to the data
+        $validatedData['employee_id'] = $employeeId;
+        $address = Address::create($validatedData);
+
+        return response()->json(['status' => 200, 'message' => 'Address added successfully', 'data' => $address], 200);
     }
 }
