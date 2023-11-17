@@ -19,4 +19,9 @@ class Employee extends Model
     {
         return $this->belongsTo(Department::class);
     }
+
+    public function contactNumbers()
+    {
+        return $this->hasMany(ContactNumber::class);
+    }
 }

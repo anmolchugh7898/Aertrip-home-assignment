@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use Illuminate\Support\Facades\Validator;
+use App\Models\ContactNumber;
 
 class EmployeeController extends Controller
 {
@@ -61,5 +62,33 @@ class EmployeeController extends Controller
 
         // Show employee details
         return response()->json(['status' => 200, 'message' => 'Employee details', 'data' => $employee], 200);
+    }
+
+    public function addContactNumber(Request $request, $employeeId)
+    {
+        // Validator validates the input data
+        $validator = Validator::make($request->all(), [
+            'number' => 'required|max:255|regex:/^[0-9]{10,15}$/',
+            'type' => 'required|string|max:255',
+        ]);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            // Handle validation errors as needed
+            return response()->json(['status' => 422, 'message' => $validator->errors(), 'data' => []], 422);
+        }
+
+        $employee = Employee::find($employeeId);
+
+        if (!$employee) {
+            return response()->json(['status' => 404, 'message' => 'Employee not found', 'data' => []], 404);
+        }
+
+        // If the data is validated then adding into the table
+        $validatedData = $validator->validated();
+        $validatedData['employee_id'] = $employeeId;
+        $contactNumber = ContactNumber::create($validatedData);
+
+        return response()->json(['status' => 200, 'message' => 'Contact number added successfully', 'data' => $contactNumber], 200);
     }
 }
