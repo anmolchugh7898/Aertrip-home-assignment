@@ -32,22 +32,48 @@ class EmployeeController extends Controller
         return response()->json(['status' => 201, 'message' => 'Employee created successfully', 'data' => $employee], 201);
     }
 
-    public function index($departmentId)
+    public function index($departmentId, Request $request)
     {
         // When Department id is 0 then show all the employees from all the departments
-        if($departmentId == 0) {
-            $employees = Employee::with('department')
-                                ->with('addresses')
-                                ->with('contactNumbers')
-                                ->get();
+        if ($departmentId == 0) {
+            $employeesQuery = Employee::with('department')
+                ->with('addresses')
+                ->with('contactNumbers');
         } else {
-            // Show all employees department wise
-            $employees = Employee::where('department_id', $departmentId)
-                            ->with('department')
-                            ->with('addresses')
-                            ->with('contactNumbers')
-                            ->get();
+            // Show all employees department-wise
+            $employeesQuery = Employee::where('department_id', $departmentId)
+                ->with('department')
+                ->with('addresses')
+                ->with('contactNumbers');
         }
+
+        // Searching
+        if ($request->has('search')) {
+            $searchTerm = $request->input('search');
+            $employeesQuery->where(function ($query) use ($searchTerm) {
+                $query->where('name', 'like', "%$searchTerm%")
+                    ->orWhere('email', 'like', "%$searchTerm%");
+
+                // Search by phone number
+                $query->orWhereHas('contactNumbers', function ($subQuery) use ($searchTerm) {
+                    $subQuery->where('number', 'like', "%$searchTerm%");
+                });
+
+                // Search by address
+                $query->orWhereHas('addresses', function ($subQuery) use ($searchTerm) {
+                    $subQuery->where('address_line_1', 'like', "%$searchTerm%")
+                        ->orWhere('address_line_2', 'like', "%$searchTerm%")
+                        ->orWhere('city', 'like', "%$searchTerm%")
+                        ->orWhere('state', 'like', "%$searchTerm%")
+                        ->orWhere('zip_code', 'like', "%$searchTerm%");
+                });
+
+                // Add more fields to search if needed
+            });
+        }
+
+        // Get the final result
+        $employees = $employeesQuery->get();
 
         // If employees exist in a depratment then show the list
         if(count($employees) > 0) {
