@@ -36,10 +36,17 @@ class EmployeeController extends Controller
     {
         // When Department id is 0 then show all the employees from all the departments
         if($departmentId == 0) {
-            $employees = Employee::all();
+            $employees = Employee::with('department')
+                                ->with('addresses')
+                                ->with('contactNumbers')
+                                ->get();
         } else {
             // Show all employees department wise
-            $employees = Employee::where('department_id', $departmentId)->get();
+            $employees = Employee::where('department_id', $departmentId)
+                            ->with('department')
+                            ->with('addresses')
+                            ->with('contactNumbers')
+                            ->get();
         }
 
         // If employees exist in a depratment then show the list
@@ -54,7 +61,11 @@ class EmployeeController extends Controller
     public function view($employeeId)
     {
         // Check if employee exist or not
-        $employee = Employee::where('id', $employeeId)->with('department')->first();
+        $employee = Employee::where('id', $employeeId)
+                            ->with('department')
+                            ->with('addresses')
+                            ->with('contactNumbers')
+                            ->first();
         
         // If employee doesn't exist then show no employee found
         if (!$employee) {
