@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\EmployeeController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -19,6 +20,9 @@ Route::post("create-department", [DepartmentController::class, 'create']);
 Route::get('/department-list', [DepartmentController::class, 'index']);
 Route::put('/update-department/{id}', [DepartmentController::class, 'update']);
 Route::delete('/delete-department/{id}', [DepartmentController::class, 'destroy']);
+
+// Employees route
+Route::post("create-employee", [EmployeeController::class, 'create']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
