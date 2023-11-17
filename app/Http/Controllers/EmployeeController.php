@@ -29,4 +29,23 @@ class EmployeeController extends Controller
 
         return response()->json(['status' => 201, 'message' => 'Employee created successfully', 'data' => $employee], 201);
     }
+
+    public function index($departmentId)
+    {
+        // When Department id is 0 then show all the employees from all the departments
+        if($departmentId == 0) {
+            $employees = Employee::all();
+        } else {
+            // Show all employees department wise
+            $employees = Employee::where('department_id', $departmentId)->get();
+        }
+
+        // If employees exist in a depratment then show the list
+        if(count($employees) > 0) {
+            return response()->json(['status' => 200, 'message' => 'List of all departments', 'data' => $employees], 200);
+        } else {
+            // No employees exist in a department
+            return response()->json(['status' => 200, 'message' => 'No employees exist in this department', 'data' => $employees], 200);
+        }
+    }
 }

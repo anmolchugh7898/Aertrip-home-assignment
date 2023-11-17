@@ -23,6 +23,7 @@ Route::delete('/delete-department/{id}', [DepartmentController::class, 'destroy'
 
 // Employees route
 Route::post("create-employee", [EmployeeController::class, 'create']);
+Route::get('/employees-list/{departmentId}', [EmployeeController::class, 'index']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
