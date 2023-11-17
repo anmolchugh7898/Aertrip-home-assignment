@@ -139,7 +139,7 @@ class EmployeeController extends Controller
     public function destroy($id)
     {
         $employee = Employee::findOrFail($id);
-        dd($employee);
+
         // If employee doeesn't exists
         if (!$employee) {
             return response()->json(['status' => 404, 'message' => 'Employee not found', 'data' => []], 404);
@@ -155,5 +155,77 @@ class EmployeeController extends Controller
         $employee->delete();
 
         return response()->json(['status' => 200, 'message' => 'Employee deleted successfully', 'data' => []], 200);
+    }
+
+    public function update(Request $request, $employeeId)
+    {
+        $employee = Employee::find($employeeId);
+
+        if (!$employee) {
+            return response()->json(['status' => 404, 'message' => 'Employee not found', 'data' => []], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:employees,email',
+            'department_id' => 'required|exists:departments,id',
+            'contact_numbers.*.id' => 'required|integer',
+            'contact_numbers.*.number' => 'required|max:255|regex:/^[0-9]{10,15}$/',
+            'contact_numbers.*.type' => 'required|string|max:255',
+            'addresses.*.id' => 'required|integer',
+            'addresses.*.address_type' => 'required|string|max:255',
+            'addresses.*.address_line_1' => 'required|string|max:255',
+            'addresses.*.address_line_2' => 'nullable|string|max:255',
+            'addresses.*.city' => 'required|string|max:255',
+            'addresses.*.state' => 'required|string|max:255',
+            'addresses.*.zip_code' => 'required|string|max:10',
+        ]);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            // Handle validation errors as needed
+            return response()->json(['status' => 422, 'message' => $validator->errors(), 'data' => []], 422);
+        }
+
+        $validatedData = $validator->validated();
+
+        // Update phone numbers
+        foreach ($validatedData['contact_numbers'] as $numberData) {
+            $employee->contactNumbers()->updateOrCreate(
+                [
+                    'id' => $numberData['id']
+                ],
+                [
+                    'number' => $numberData['number'], 
+                    'type' => $numberData['type']
+                ]
+            );
+        }
+
+        // Update Address
+        foreach ($validatedData['addresses'] as $addressData) {
+            $employee->addresses()->updateOrCreate(
+                [
+                    'id' => $addressData['id']
+                ],
+                [
+                    'address_type' => $addressData['address_type'],
+                    'address_line_1' => $addressData['address_line_1'],
+                    'address_line_2' => isset($addressData['address_line_2']),
+                    'city' => $addressData['city'],
+                    'state' => $addressData['state'],
+                    'zip_code' => $addressData['zip_code'],
+                ]
+            );
+        }
+
+        // Get Updated Employee Data
+        $employee = Employee::where('id', $employeeId)
+                            ->with('department')
+                            ->with('addresses')
+                            ->with('contactNumbers')
+                            ->first();      
+                              
+        return response()->json(['status' => 200, 'message' => 'Contact numbers updated successfully', 'data' => $employee], 200);
     }
 }
