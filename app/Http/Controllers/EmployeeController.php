@@ -48,4 +48,18 @@ class EmployeeController extends Controller
             return response()->json(['status' => 200, 'message' => 'No employees exist in this department', 'data' => $employees], 200);
         }
     }
+
+    public function view($employeeId)
+    {
+        // Check if employee exist or not
+        $employee = Employee::where('id', $employeeId)->with('department')->first();
+        
+        // If employee doesn't exist then show no employee found
+        if (!$employee) {
+            return response()->json(['status' => 404, 'message' => 'Employee not found', 'data' => []], 404);
+        }
+
+        // Show employee details
+        return response()->json(['status' => 200, 'message' => 'Employee details', 'data' => $employee], 200);
+    }
 }
