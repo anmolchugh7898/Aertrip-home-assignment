@@ -67,13 +67,12 @@ class EmployeeController extends Controller
                         ->orWhere('state', 'like', "%$searchTerm%")
                         ->orWhere('zip_code', 'like', "%$searchTerm%");
                 });
-
-                // Add more fields to search if needed
             });
         }
 
-        // Get the final result
-        $employees = $employeesQuery->get();
+        // Pagination
+        $perPage = $request->input('per_page', 10);
+        $employees = $employeesQuery->paginate($perPage);
 
         // If employees exist in a depratment then show the list
         if(count($employees) > 0) {

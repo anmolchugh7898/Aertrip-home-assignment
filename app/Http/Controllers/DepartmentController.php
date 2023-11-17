@@ -72,6 +72,7 @@ class DepartmentController extends Controller
     {
         $departmentQuery = Department::query();
 
+        // Appling query on searching
         if ($request->has('search')) {
             $searchTerm = $request->input('search');
             $departmentQuery->where(function ($query) use ($searchTerm) {
@@ -79,7 +80,9 @@ class DepartmentController extends Controller
             });
         }
 
-        $departments = $departmentQuery->get();
+        // Pagination
+        $perPage = $request->input('per_page', 10);
+        $departments = $departmentQuery->paginate($perPage);
         return response()->json(['status' => 200, 'message' => 'List of all departments', 'data' => $departments], 200);
     }
 }
