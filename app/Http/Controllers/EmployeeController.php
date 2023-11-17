@@ -135,4 +135,25 @@ class EmployeeController extends Controller
 
         return response()->json(['status' => 200, 'message' => 'Address added successfully', 'data' => $address], 200);
     }
+
+    public function destroy($id)
+    {
+        $employee = Employee::findOrFail($id);
+        dd($employee);
+        // If employee doeesn't exists
+        if (!$employee) {
+            return response()->json(['status' => 404, 'message' => 'Employee not found', 'data' => []], 404);
+        }
+
+        // Delete associated addresses
+        $employee->addresses()->delete();
+
+        // Delete associated contact numbers
+        $employee->contactNumbers()->delete();
+
+        // Delete the employee
+        $employee->delete();
+
+        return response()->json(['status' => 200, 'message' => 'Employee deleted successfully', 'data' => []], 200);
+    }
 }
