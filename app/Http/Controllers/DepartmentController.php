@@ -68,9 +68,18 @@ class DepartmentController extends Controller
         return response()->json(['status' => 200, 'message' => 'Department deleted successfully', 'data' => []], 200);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $departments = Department::all();
+        $departmentQuery = Department::query();
+
+        if ($request->has('search')) {
+            $searchTerm = $request->input('search');
+            $departmentQuery->where(function ($query) use ($searchTerm) {
+                $query->where('department_name', 'like', "%$searchTerm%");
+            });
+        }
+
+        $departments = $departmentQuery->get();
         return response()->json(['status' => 200, 'message' => 'List of all departments', 'data' => $departments], 200);
     }
 }
