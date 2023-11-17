@@ -12,7 +12,7 @@ class DepartmentController extends Controller
     {
         // Validator validates the input data
         $validator = Validator::make($request->all(), [
-            'department_name' => 'required|string|max:255',
+            'department_name' => 'required|string|max:255|unique:departments,department_name',
         ]);
 
         // Check if validation fails
@@ -23,14 +23,6 @@ class DepartmentController extends Controller
 
         // If the data is validated then adding into the table
         $validatedData = $validator->validated();
-        $existingDepartment = Department::where('department_name', $validatedData['department_name'])->first();
-
-        if ($existingDepartment) {
-            // Department with the same name already exists
-            return response()->json(['status' => 409, 'message' => 'Department with the same name already exists', 'data' => []], 409);
-        }
-
-        // If the department doesn't exist, create it
         $department = Department::create($validatedData);
 
         return response()->json(['status' => 201, 'message' => 'Department created successfully', 'data' => $department], 201);
